@@ -1,112 +1,157 @@
-# CodeBoard
+# 💰 PocketWise – Personal Finance Tracker
 
-A collaborative coding platform built for DSA interview preparation. Create rooms, code with others in real time, and track your problem-solving progress.
-
-&nbsp; **Stack:** MongoDB · Express · React · Node.js · Socket.io
+A full-stack personal finance tracker built with **Node.js**, **MySQL**, and vanilla **HTML/CSS/JS**.
 
 ---
 
-## What it does
+## 🗂️ Project Structure
 
-- Real-time collaborative code editor — changes sync instantly across all users in a room
-- Monaco Editor (the same engine powering VS Code) with support for JavaScript, Python, Java, and C++
-- In-room live chat so you can discuss approaches without switching tabs
-- Curated DSA problem set with difficulty tags
-- JWT authentication with protected routes
-- User profiles with solved problem tracking
+```
+pocketwise/
+├── backend/        → Node.js + Express REST API
+├── frontend/       → Plain HTML/CSS/JS (no framework)
+└── database/       → SQL schema and seed data
+```
 
 ---
 
-## Running locally
+## ⚙️ Prerequisites
 
-**Prerequisites:** Node.js v16+, MongoDB
+Make sure you have these installed:
+
+- [Node.js](https://nodejs.org/) (v18 or higher)
+- [MySQL](https://dev.mysql.com/downloads/) (v8.0 or higher)
+- A MySQL client (CLI or Workbench)
+
+---
+
+## 🚀 Setup Instructions
+
+### Step 1 — Clone the repository
 
 ```bash
-git clone https://github.com/YOUR_USERNAME/codeboard.git
-cd codeboard
-npm run install-all
+git clone <your-repo-url>
+cd pocketwise
 ```
 
-Create a `.env` file in the root:
+### Step 2 — Set up the database
 
+Open MySQL CLI and run the schema files in order:
+
+```bash
+mysql -u root -p < database/schema.sql
 ```
-MONGO_URI=your_mongodb_uri
-JWT_SECRET=your_secret
-CLIENT_URL=http://localhost:3000
+
+Then run the advanced SQL (triggers, procedures, cursors, functions):
+
+```bash
+mysql -u root -p pocketwise < database/pocketwise_advanced.sql
+```
+
+Or using MySQL CLI SOURCE command:
+```sql
+USE pocketwise;
+SOURCE /path/to/database/schema.sql;
+SOURCE /path/to/database/pocketwise_advanced.sql;
+```
+
+### Step 3 — Configure the backend
+
+Copy the example env file and fill in your values:
+
+```bash
+cd backend
+cp .env.example .env
+```
+
+Edit `.env`:
+```
+DB_HOST=localhost
+DB_USER=root
+DB_PASSWORD=your_mysql_password
+DB_NAME=pocketwise
+JWT_SECRET=your_secret_key_here
+JWT_EXPIRES_IN=30d
 PORT=5000
 ```
 
+### Step 4 — Install backend dependencies
+
 ```bash
-npm run dev
+cd backend
+npm install
 ```
 
-App runs on `http://localhost:3000`. Backend on port `5000`.
+### Step 5 — Start the backend server
 
-To seed sample problems:
 ```bash
-node server/config/seed.js
+node server.js
+```
+
+You should see:
+```
+Server running on port 5000
+Connected to MySQL
+```
+
+### Step 6 — Open the frontend
+
+Open `frontend/index.html` directly in your browser, **or** use VS Code Live Server (right-click `index.html` → Open with Live Server).
+
+The app will be available at:
+```
+http://127.0.0.1:5500/frontend/index.html
 ```
 
 ---
 
-## Project structure
+## 🗄️ Database Features
 
-```
-├── server/
-│   ├── index.js
-│   ├── config/        # Socket.io handlers, DB seed
-│   ├── controllers/   # Auth, problems, rooms, users
-│   ├── middleware/    # JWT auth
-│   ├── models/        # User, Room, Problem schemas
-│   └── routes/
-└── client/
-    └── src/
-        ├── components/
-        ├── context/   # Auth context (JWT + user state)
-        └── pages/     # Home, Problems, Room, Profile, Auth
-```
+This project uses advanced MySQL/PL-SQL features:
+
+| Type | Name | Description |
+|------|------|-------------|
+| Trigger | `trg_after_transaction_insert` | Auto-updates budget `spent` on new transaction |
+| Trigger | `trg_after_transaction_delete` | Reverses budget `spent` when transaction deleted |
+| Trigger | `trg_before_user_delete` | Logs deleted users to audit table |
+| Procedure | `get_monthly_summary` | Returns income/expense/balance for a month |
+| Procedure | `get_category_breakdown` | Category-wise spending with cursor loop |
+| Cursor | Inside `get_category_breakdown` | Loops through each category to compute totals |
+| Function | `get_user_balance` | Returns all-time balance for a user |
+| Function | `get_category_total_spent` | Returns total spent in a category for a month |
 
 ---
 
-## API
+## 🔌 API Endpoints
 
-| Method | Route | Description |
-|--------|-------|-------------|
-| POST | `/api/auth/register` | Create account |
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| POST | `/api/auth/register` | Register new user |
 | POST | `/api/auth/login` | Login |
-| GET | `/api/auth/me` | Current user |
-| GET | `/api/problems` | All problems |
-| GET | `/api/problems/:slug` | Single problem |
-| POST | `/api/rooms` | Create room |
-| GET | `/api/rooms/:roomId` | Room details |
-| GET | `/api/users/:username` | User profile |
+| GET | `/api/transactions` | Get transactions (filterable) |
+| POST | `/api/transactions` | Add transaction |
+| GET | `/api/transactions/summary` | Monthly income/expense summary |
+| GET | `/api/transactions/breakdown` | Category-wise breakdown |
+| GET | `/api/budgets` | Get budgets |
+| POST | `/api/budgets` | Set budget |
+| GET | `/api/savings` | Get savings goals |
 
 ---
 
-## Socket events
+## 🧪 Verify Database Setup
 
-| Event | Description |
-|-------|-------------|
-| `join-room` | Join a session |
-| `code-change` | Broadcast editor changes |
-| `send-message` | Send chat message |
-| `code-update` | Receive peer's code |
-| `receive-message` | Receive chat message |
-| `room-users` | Updated participants list |
+After running the SQL files, verify in MySQL:
 
----
-
-## Tech
-
-| | |
-|--|--|
-| Frontend | React 18, React Router v6 |
-| Editor | Monaco Editor |
-| Realtime | Socket.io |
-| Backend | Express.js |
-| Database | MongoDB, Mongoose |
-| Auth | JWT, bcryptjs |
+```sql
+SHOW TRIGGERS IN pocketwise;
+SHOW PROCEDURE STATUS WHERE Db = 'pocketwise';
+SHOW FUNCTION STATUS WHERE Db = 'pocketwise';
+```
 
 ---
 
-MIT License
+## 📝 Notes
+
+- The `.env` file is **not committed** to git — each developer must create their own from `.env.example`
+- The `node_modules/` folder is also excluded — run `npm install` after cloning
+- JWT tokens expire after **30 days** by default (configurable in `.env`)
